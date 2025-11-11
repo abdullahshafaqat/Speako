@@ -3,9 +3,23 @@ import axiosInstance from "../lib/Axios"
 import toast from "react-hot-toast"
 import { io } from "socket.io-client";
 
-const BASE_URL = "http://localhost:5000";
 
-// Helper functions for sessionStorage
+const BASE_URL = import.meta.env.MODE === "development" 
+  ? "http://localhost:5000" 
+  : "/";
+
+
+const API_BASE =
+  (import.meta as any).env?.VITE_API_URL?.replace(/\/+$/, "") ||
+  BASE_URL || "http://localhost:5000";
+
+
+const SOCKET_URL =
+  (import.meta as any).env?.VITE_SOCKET_URL?.replace(/\/+$/, "") ||
+  API_BASE;
+
+
+
 const SESSION_STORAGE_KEY = "chat-auth-user";
 
 const getStoredUser = () => {
@@ -140,7 +154,7 @@ export const useAuth = create((set, get) => ({
     const userId = String(authUser._id);
     console.log("Connecting socket with userId:", userId);
     
-    const socket = io(BASE_URL, {
+    const socket = io(SOCKET_URL, {
       query: {
         userId: userId,
       },

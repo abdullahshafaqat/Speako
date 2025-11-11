@@ -1,7 +1,10 @@
 import axios from "axios";
 
+const API_BASE =
+  import.meta.env.VITE_API_URL?.replace(/\/+$/, "") || "http://localhost:5000";
+
 const axiosMessages = axios.create({
-  baseURL: "http://localhost:5000/api/messages",
+  baseURL: `${API_BASE}/api/messages`,
   withCredentials: true,
 });
 

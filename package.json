@@ -1,8 +1,13 @@
 {
-  "dependencies": {
-    "@tailwindcss/postcss": "^4.1.16",
-    "daisyui": "^5.4.3",
-    "socket.io": "^4.8.1",
-    "tailwindcss": "^4.1.16"
-  }
+  "name": "mern-chat-app",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "build":"npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend",
+    "start":"npm start --prefix backend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
