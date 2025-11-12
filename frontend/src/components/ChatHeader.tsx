@@ -10,7 +10,7 @@ const ChatHeader = () => {
 
   const { onlineUsers = [] } = useAuth() as { onlineUsers?: string[] };
 
-  if (!selectedUser) return null; // ✅ Prevent crash
+  if (!selectedUser) return null;
 
   return (
     <div className="p-2.5 border-b border-base-300">

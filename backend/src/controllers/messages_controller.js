@@ -51,11 +51,10 @@ export async function sendMessage(req, res) {
     let imageUrl;
 
     if (image) {
-      // ✅ Supports larger images
       const uploadResponse = await cloudinary.uploader.upload(image, {
         resource_type: "auto",
-        chunk_size: 6000000, // upload in 6MB chunks
-        timeout: 120000, // 2 minutes
+        chunk_size: 6000000,
+        timeout: 120000,
       });
 
       imageUrl = uploadResponse.secure_url;
@@ -77,13 +76,11 @@ export async function sendMessage(req, res) {
       _id: newMessage._id.toString(),
     };
 
-    // ✅ Emit to receiver
     const receiverSocketId = getReceiverSocketId(receiverId.toString());
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", messageToEmit);
     }
 
-    // ✅ Emit to sender (for immediate update)
     const senderSocketId = getReceiverSocketId(senderId.toString());
     if (senderSocketId) {
       io.to(senderSocketId).emit("newMessage", messageToEmit);

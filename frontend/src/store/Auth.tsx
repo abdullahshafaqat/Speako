@@ -45,7 +45,7 @@ const setStoredUser = (user: any) => {
 };
 
 export const useAuth = create((set, get) => ({
-    authUser: getStoredUser(), // Initialize from sessionStorage
+    authUser: getStoredUser(),
     isSigningUp: false,
     isLoggingIn: false,
     isUpdatingProfile: false,
@@ -58,17 +58,14 @@ export const useAuth = create((set, get) => ({
           const res = await axiosInstance.get("/check");
   
           if (res.data.user) {
-              // Always trust backend cookie as the source of truth
               setStoredUser(res.data.user);
               set({ authUser: res.data.user });
               (get() as any).connectSocket();
           } else {
-              // No valid cookie → logout state
               setStoredUser(null);
               set({ authUser: null });
           }
       } catch (error) {
-          // Server error also means logged out
           setStoredUser(null);
           set({ authUser: null });
           console.log("Error during checkAuth:", error);
@@ -81,7 +78,7 @@ export const useAuth = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/signup", data);
-      setStoredUser(res.data); // Store in sessionStorage (tab-specific)
+      setStoredUser(res.data);
       set({ authUser: res.data });
       toast.success("Account created successfully");
       (get() as any).connectSocket();
@@ -95,7 +92,7 @@ export const useAuth = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/login", data);
-      setStoredUser(res.data); // Store in sessionStorage (tab-specific)
+      setStoredUser(res.data);
       set({ authUser: res.data });
       toast.success("Logged in successfully");
       (get() as any).connectSocket();
@@ -108,7 +105,7 @@ export const useAuth = create((set, get) => ({
   logout: async () => {
     try {
       await axiosInstance.post("/logout");
-      setStoredUser(null); // Clear sessionStorage
+      setStoredUser(null);
       set({ authUser: null });
       toast.success("Logged out successfully");
       (get() as any).disconnectSocket();
@@ -120,7 +117,7 @@ export const useAuth = create((set, get) => ({
     set({ isUpdatingProfile: true });
     try {
       const res = await axiosInstance.put("/update-profile", data);
-      setStoredUser(res.data); // Update sessionStorage
+      setStoredUser(res.data);
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
     } catch (error) {
@@ -137,7 +134,6 @@ export const useAuth = create((set, get) => ({
       return;
     }
     
-    // Disconnect existing socket if any
     const existingSocket = (get() as any).socket;
     if (existingSocket) {
       console.log("Disconnecting existing socket");
@@ -150,7 +146,6 @@ export const useAuth = create((set, get) => ({
       }
     }
     
-    // Convert userId to string to ensure consistency
     const userId = String(authUser._id);
     console.log("Connecting socket with userId:", userId);
     

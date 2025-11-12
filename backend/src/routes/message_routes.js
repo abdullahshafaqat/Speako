@@ -5,8 +5,6 @@ import { getAllUsers, getChats, sendMessage } from "../controllers/messages_cont
 
 router.get("/users", protectRoute, getAllUsers);
 router.get("/:id", protectRoute, getChats);
-
-// Fix: add missing slash before :id
 router.post("/send/:id", protectRoute, sendMessage);
 
 export default router;

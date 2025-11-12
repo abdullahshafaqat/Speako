@@ -26,7 +26,7 @@ const Sidebar = () => {
     isUsersLoading: boolean;
   };
 
-  const { onlineUsers = [] } = useAuth() as { onlineUsers?: string[] }; // ✅ SAFE DEFAULT
+  const { onlineUsers = [] } = useAuth() as { onlineUsers?: string[] };
 
   const [showOnlineOnly, setShowOnlineOnly] = useState<boolean>(false);
 

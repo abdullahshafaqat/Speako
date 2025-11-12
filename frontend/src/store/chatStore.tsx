@@ -12,7 +12,6 @@ export const useChatStore = create((set,get) => ({
 
     setSelectedUser: (user: any) => {
         set({ selectedUser: user });
-        // Clear messages when selecting a new user
         if (user) {
             set({ messages: [] });
         }
@@ -52,7 +51,6 @@ export const useChatStore = create((set,get) => ({
   try {
     const res = await axiosMessages.post(`/send/${selectedUser._id}`, messageData);
     
-    // Check if message already exists (in case socket event fired first)
     const messageExists = messages.some((msg: any) => msg._id === res.data._id);
     if (!messageExists) {
       set({ messages: [...messages, res.data] });
@@ -75,9 +73,8 @@ export const useChatStore = create((set,get) => ({
             return;
         }
 
-        // Helper function to set up message listener
         const setupMessageListener = () => {
-            socket.off("newMessage"); // Remove any existing listeners first
+            socket.off("newMessage");
             
             socket.on("newMessage", (message: any) => {
                 console.log("Received newMessage event:", message);
@@ -89,19 +86,16 @@ export const useChatStore = create((set,get) => ({
                     return;
                 }
                 
-                // Convert all IDs to strings for comparison
                 const messageSenderId = String(message.senderId);
                 const messageReceiverId = String(message.receiverId);
                 const authUserId = String(currentAuthUser._id);
                 const selectedUserId = String(currentSelectedUser._id);
                 
-                // Check if message is between current user and selected user
                 const isMessageBetweenUsers = 
                     (messageSenderId === authUserId && messageReceiverId === selectedUserId) ||
                     (messageSenderId === selectedUserId && messageReceiverId === authUserId);
                 
                 if (isMessageBetweenUsers) {
-                    // Check if message already exists to avoid duplicates
                     const messageExists = messages.some((msg: any) => String(msg._id) === String(message._id));
                     if (!messageExists) {
                         console.log("Adding new message to state");
@@ -115,7 +109,6 @@ export const useChatStore = create((set,get) => ({
             });
         };
 
-        // Wait for socket to be connected
         if (!socket.connected) {
             console.log("Socket not connected, waiting for connection...");
             socket.once("connect", () => {
@@ -132,5 +125,4 @@ export const useChatStore = create((set,get) => ({
         if (!socket) return;
         socket.off("newMessage");
     },
-    // Duplicate setSelectedUser removed; the first declaration above is kept
 }));

@@ -38,7 +38,6 @@ const { sendMessage } = useChatStore() as { sendMessage: (payload: { text: strin
         image: imagePreview,
       });
 
-      // Clear form
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) (fileInputRef.current as HTMLInputElement).value = "";

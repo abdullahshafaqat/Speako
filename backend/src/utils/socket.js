@@ -20,7 +20,6 @@ io.on("connection", (socket) => {
     const userId = String(socket.handshake.query.userId || "");
     
     if (userId) {
-        // If user already has a socket, disconnect the old one
         const existingSocketId = userSocketMap[userId];
         if (existingSocketId && existingSocketId !== socket.id) {
             console.log(`User ${userId} already has a socket ${existingSocketId}, disconnecting old one`);
@@ -39,7 +38,6 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         console.log("user disconnected", socket.id);
         if (userId) {
-            // Only delete if this socket is still mapped to this user
             if (userSocketMap[userId] === socket.id) {
                 delete userSocketMap[userId];
                 console.log(`Removed user ${userId} from socket map`);
