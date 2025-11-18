@@ -9,7 +9,6 @@ if (config.geminiApiKey) {
 
 export const isAiAssistantEnabled = () => Boolean(geminiClient && config.aiAssistantId);
 
-
 const VALID_GEMINI_MODELS = [
   "gemini-2.5-flash",
   "gemini-2.5-pro",
@@ -24,7 +23,6 @@ const VALID_GEMINI_MODELS = [
 ];
 
 async function tryGenerateWithModel(modelName, geminiHistory, currentUserMessage) {
-
   const modelConfig = {
     model: modelName,
     generationConfig: {
@@ -32,42 +30,52 @@ async function tryGenerateWithModel(modelName, geminiHistory, currentUserMessage
       maxOutputTokens: config.aiMaxOutputTokens,
     },
   };
-  
-  
   if (modelName.includes("1.5") || modelName.includes("2.0") || modelName.includes("2.5")) {
     modelConfig.systemInstruction = config.aiSystemPrompt;
   }
-  
   const model = geminiClient.getGenerativeModel(modelConfig);
-
-  
   const chat = model.startChat({
     history: geminiHistory,
   });
-
- 
   const result = await chat.sendMessage(currentUserMessage);
   const response = await result.response;
   const aiMessage = response.text().trim();
-
   if (!aiMessage) {
     throw new Error("AI provider returned an empty response");
   }
-
   return aiMessage;
+}
+
+async function sendWithRetry(modelName, geminiHistory, currentUserMessage) {
+  const maxAttempts = 3;
+  let attempt = 0;
+  let lastError = null;
+  while (attempt < maxAttempts) {
+    try {
+      return await tryGenerateWithModel(modelName, geminiHistory, currentUserMessage);
+    } catch (error) {
+      lastError = error;
+      const message = error.message || String(error);
+      const status = error.status || error.statusCode || (error.response && error.response.status);
+      if (status === 503 || status === 500 || message.includes("503") || message.includes("500")) {
+        attempt += 1;
+        const delayMs = 300 * attempt + Math.floor(Math.random() * 200);
+        await new Promise((r) => setTimeout(r, delayMs));
+        continue;
+      }
+      throw error;
+    }
+  }
+  throw lastError || new Error("SERVICE_UNAVAILABLE: Gemini service is temporarily unavailable. Please try again in a moment");
 }
 
 export async function generateAssistantReply(conversationMessages) {
   if (!geminiClient) {
     throw new Error("Gemini client is not configured. Provide GEMINI_API_KEY in the .env file.");
   }
-
   try {
-    
     const geminiHistory = [];
     let currentUserMessage = null;
-
-    
     for (let i = 0; i < conversationMessages.length - 1; i++) {
       const msg = conversationMessages[i];
       if (msg.role === "user") {
@@ -82,18 +90,13 @@ export async function generateAssistantReply(conversationMessages) {
         });
       }
     }
-
-   
     const lastMsg = conversationMessages[conversationMessages.length - 1];
     if (lastMsg && lastMsg.role === "user") {
       currentUserMessage = lastMsg.content;
     }
-
     if (!currentUserMessage) {
       throw new Error("No user message found to send");
     }
-
-    
     const needsSystemInHistory = !config.aiModel.includes("1.5") && !config.aiModel.includes("2.0") && !config.aiModel.includes("2.5");
     if (needsSystemInHistory) {
       geminiHistory.unshift({
@@ -105,39 +108,29 @@ export async function generateAssistantReply(conversationMessages) {
         parts: [{ text: config.aiSystemPrompt }],
       });
     }
-
-   
-    const modelsToTry = [config.aiModel, ...VALID_GEMINI_MODELS.filter(m => m !== config.aiModel)];
-    
-    let lastError = null;
+    const modelsToTry = [config.aiModel, ...VALID_GEMINI_MODELS.filter((m) => m !== config.aiModel)];
+    let notFoundError = null;
     for (const modelName of modelsToTry) {
       try {
-        return await tryGenerateWithModel(modelName, geminiHistory, currentUserMessage);
+        return await sendWithRetry(modelName, geminiHistory, currentUserMessage);
       } catch (error) {
-        lastError = error;
-        const errorMessage = error.message || String(error);
-      
-        if (!errorMessage.includes("404") && !errorMessage.includes("not found") && !errorMessage.includes("is not found")) {
-          throw error;
+        const msg = error.message || String(error);
+        const status = error.status || error.statusCode || (error.response && error.response.status);
+        if (status === 404 || msg.includes("404") || msg.includes("not found") || msg.includes("is not found")) {
+          notFoundError = error;
+          continue;
         }
-        
-        continue;
+        throw error;
       }
     }
-
-    
-    if (lastError) {
-      const errorMessage = lastError.message || String(lastError);
-      throw new Error(`INVALID_MODEL: None of the tried Gemini models worked. Tried: ${modelsToTry.join(", ")}. Error: ${errorMessage}. Please check your GEMINI_API_KEY and ensure it has access to Gemini models.`);
+    if (notFoundError) {
+      const em = notFoundError.message || String(notFoundError);
+      throw new Error(`INVALID_MODEL: None of the tried Gemini models worked. Tried: ${modelsToTry.join(", ")}. Error: ${em}. Please check your GEMINI_API_KEY and ensure it has access to Gemini models.`);
     }
-
     throw new Error("Failed to generate response with any Gemini model");
   } catch (error) {
- 
     const errorMessage = error.message || String(error);
     const statusCode = error.status || error.statusCode || (error.response && error.response.status);
-    
-   
     if (statusCode === 404 || errorMessage.includes("404") || errorMessage.includes("not found") || errorMessage.includes("is not found") || errorMessage.includes("INVALID_MODEL")) {
       throw new Error(`INVALID_MODEL: ${errorMessage}`);
     } else if (statusCode === 429 || errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("Quota")) {

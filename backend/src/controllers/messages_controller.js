@@ -166,7 +166,6 @@ async function handleAiAssistantReply({ userId }) {
     } catch (error) {
       console.error("AI provider error:", error.message);
       
-      // Provide more specific error messages to users
       if (error.message.includes("INVALID_MODEL")) {
         aiReply = "I'm having a configuration issue. The AI model name is incorrect. Please check the server settings - the model should be a valid Gemini model (gemini-pro, gemini-1.5-pro, or gemini-1.5-flash).";
       } else if (error.message.includes("SAFETY_FILTER")) {
@@ -185,6 +184,12 @@ async function handleAiAssistantReply({ userId }) {
     }
   }
 
+  const lastAssistantMessage = orderedHistory
+    .filter((m) => m.senderId.toString() === config.aiAssistantId)
+    .slice(-1)[0];
+  if (lastAssistantMessage && String(lastAssistantMessage.text || "").trim() === String(aiReply).trim()) {
+    return;
+  }
   await createAndEmitAiMessage({
     receiverId: userId,
     text: aiReply,

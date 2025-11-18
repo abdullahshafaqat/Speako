@@ -15,7 +15,7 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET,
   geminiApiKey: process.env.GEMINI_API_KEY,
   aiAssistantId: process.env.AI_ASSISTANT_ID,
-  aiAssistantName: process.env.AI_ASSISTANT_NAME || "AI Assistant",
+  aiAssistantName: process.env.AI_ASSISTANT_NAME || "SpeakBot",
   aiAssistantAvatar:
     process.env.AI_ASSISTANT_AVATAR ||
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQO42z2p6t2s8Sv8gkV_R1aMeIyfmIQR_ss7w&s",
