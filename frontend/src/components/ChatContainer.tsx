@@ -27,7 +27,7 @@ const ChatContainer: React.FC = () => {
     messages: Message[];
     getMessages: (userId: string) => void;
     isMessagesLoading: boolean;
-    selectedUser: { _id: string; profilePic?: string } | null;
+    selectedUser: { _id: string; profilePic?: string; isAiAssistant?: boolean } | null;
     subscribeToMessages: () => void;
     unsubscribeFromMessages: () => void;
   };

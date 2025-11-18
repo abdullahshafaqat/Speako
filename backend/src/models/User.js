@@ -20,6 +20,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    isAiAssistant: {
+      type: Boolean,
+      default: false,
+      immutable: true,
+    },
   },
   { timestamps: true }
 );

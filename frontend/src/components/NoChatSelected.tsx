@@ -17,7 +17,8 @@ const NoChatSelected = () => {
 
         <h2 className="text-2xl font-bold">Welcome to Speako!</h2>
         <p className="text-base-content/60">
-          Select a conversation from the sidebar to start chatting
+          Select a conversation from the sidebar to start chatting — or say hi to
+          the AI Assistant for instant help.
         </p>
       </div>
     </div>

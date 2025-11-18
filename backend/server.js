@@ -8,11 +8,16 @@ dotenv.config();
 import { connectDB } from "./src/utils/db.js";
 import app from "./src/app.js";
 import { server } from "./src/utils/socket.js";
+import { ensureAiAssistantUser } from "./src/utils/ensureAiAssistant.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-connectDB();
+connectDB()
+  .then(() => ensureAiAssistantUser())
+  .catch((error) => {
+    console.error("Failed to initialize AI assistant user:", error.message);
+  });
 
 if (process.env.NODE_ENV === "production") {
   const frontendPath = path.join(__dirname, "../frontend/dist");

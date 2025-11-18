@@ -8,7 +8,7 @@ interface User {
   _id: string;
   fullName: string;
   profilePic?: string;
-  name?: string;
+  isAiAssistant?: boolean;
 }
 
 const Sidebar = () => {
@@ -35,8 +35,13 @@ const Sidebar = () => {
   }, [getUsers]);
 
 
+  const isUserOnline = (userId: string, isAiAssistant?: boolean) => {
+    if (isAiAssistant) return true;
+    return onlineUsers.includes(userId);
+  };
+
   const filteredUsers = showOnlineOnly
-    ? users.filter((user) => onlineUsers.includes(user._id))
+    ? users.filter((user) => user.isAiAssistant || onlineUsers.includes(user._id))
     : users;
 
   if (isUsersLoading) return <SidebarSkeleton />;
@@ -86,7 +91,7 @@ const Sidebar = () => {
                 alt={user.fullName}
                 className="size-12 object-cover rounded-full"
               />
-              {onlineUsers.includes(user._id) && (
+              {isUserOnline(user._id, user.isAiAssistant) && (
                 <span
                   className="absolute bottom-0 right-0 size-3 bg-green-500 
                   rounded-full ring-2 ring-zinc-900"
@@ -95,9 +100,20 @@ const Sidebar = () => {
             </div>
 
             <div className="hidden lg:block text-left min-w-0">
-              <div className="font-medium truncate">{user.fullName}</div>
+              <div className="font-medium truncate flex items-center gap-2">
+                {user.fullName}
+                {user.isAiAssistant && (
+                  <span className="text-[10px] uppercase tracking-wider font-semibold bg-primary/20 text-primary px-2 py-0.5 rounded-full">
+                    AI
+                  </span>
+                )}
+              </div>
               <div className="text-sm text-zinc-400">
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                {user.isAiAssistant
+                  ? "Always available"
+                  : isUserOnline(user._id)
+                  ? "Online"
+                  : "Offline"}
               </div>
             </div>
           </button>

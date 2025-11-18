@@ -4,7 +4,12 @@ import { useChatStore } from "../store/chatStore";
 
 const ChatHeader = () => {
   const { selectedUser, setSelectedUser } = useChatStore() as {
-    selectedUser: any;
+    selectedUser: {
+      _id: string;
+      fullName: string;
+      profilePic?: string;
+      isAiAssistant?: boolean;
+    } | null;
     setSelectedUser: (user: any) => void;
   };
 
@@ -28,7 +33,11 @@ const ChatHeader = () => {
           <div>
             <h3 className="font-medium">{selectedUser.fullName}</h3>
             <p className="text-sm text-base-content/70">
-              {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
+              {selectedUser.isAiAssistant
+                ? "Virtual assistant · replies instantly"
+                : onlineUsers.includes(selectedUser._id)
+                ? "Online"
+                : "Offline"}
             </p>
           </div>
         </div>
